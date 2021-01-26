@@ -2,16 +2,44 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 const { OpusEncoder } = require('@discordjs/opus');
-const { prefix, token } = require('./config.json');
 const ytdl = require('ytdl-core');
+const { config } = require('process');
 const client = new Discord.Client();
-
 client.commands = new Discord.Collection();
 async function play(connection, url) {
 	connection.play(await ytdl(url), { type: 'opus' });
 }
-
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const path = './config.json'
+
+
+//Check if config file exists...
+fs.access(path, fs.F_OK, (err) => {
+  if (err) {
+    console.log(`Config file not found "${path}" \nCreating a new one...`)
+    fs.writeFile('config.json', '{\n "prefix": "!",\n  "token": "your-token-goes-here"\n}', function (err) {
+      if (err) throw err;
+      console.log('Saved!');
+      process.exit()
+    });
+    return
+  }
+console.log("Config File Found!")
+const { prefix, token } = require('./config.json');
+if (token == `your-token-goes-here`) {
+   throw new Error('Please Provide A Valid Token...');
+
+}
+console.log(`Using Prefix "${prefix}" \nUsing Token "${token}"`)
+//Client Login Token
+client.login(token); 
+
+})
+
+
+
+
+
 
 //Import Commands, I have no fucking clue how this works...
 for (const file of commandFiles) {
@@ -24,6 +52,7 @@ for (const file of commandFiles) {
 client.once('ready', () => {
     console.log("Ready!");
 });
+
 
 //Add's The Unverified role to users on join
 client.on('guildMemberAdd', member => {
@@ -76,5 +105,3 @@ try {
 
 });
 
-//Client Login Token
-client.login(token); 
