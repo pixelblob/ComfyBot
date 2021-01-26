@@ -1,30 +1,81 @@
+//Import Everything The Bot Requires.
+const fs = require('fs');
 const Discord = require('discord.js');
+const { OpusEncoder } = require('@discordjs/opus');
+const { prefix, token } = require('./config.json');
+const ytdl = require('ytdl-core');
 const client = new Discord.Client();
-//Import Cool Shit that lets me type in the console...
-const readline = require('readline').createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
 
-//Triggers When Client connects
+client.commands = new Discord.Collection();
+async function play(connection, url) {
+	connection.play(await ytdl(url), { type: 'opus' });
+}
+
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+//Import Commands, I have no fucking clue how this works...
+for (const file of commandFiles) {
+	const command = require(`./commands/${file}`);
+	client.commands.set(command.name, command);
+}
+
+
+//Triggers When The Bot Connects.
 client.once('ready', () => {
-    console.log();
+    console.log("Ready!");
 });
 
-SendCustom();
+//Add's The Unverified role to users on join
+client.on('guildMemberAdd', member => {
+    console.log(`${member.user.username} Joined The Server!`)
+    member.roles.add("799677620521926689")
+  });
+
+  //Deletes user message
+  client.on('message', message => {
+    if (message.author.username === "ComfyBot") {
+      console.log("A bot has sent a message...")
+      message.delete({ timeout: 5000 })
+      .catch(console.error);
+    }
+  })
+
+client.on('message', async message => {
+  //Check if message content starts with "play"
+    if (message.content.startsWith(`${prefix}play`)) {
+        const args = message.content.slice(5).trim().split(/ +/);
+
+        //Plays The Youtubes
+        if (message.member.voice.channel) {
+          console.log(args)
+            var URL = args
+            const connection = await message.member.voice.channel.join();
+            const stream = ytdl(URL, { filter: 'audioonly' }); 
+            const dispatcher = connection.play(stream)
+            dispatcher.on('error', console.error);
+            console.log(error)
+        }
+      }
+
+});
+
+//Command handeler, pretty fuck cool, no clue how it works...
+client.on('message', message => {
+if (!message.content.startsWith(prefix) || message.author.bot) return;
+const args = message.content.slice(prefix.length).trim().split(/ +/);
+const command = args.shift().toLowerCase();
+
+if (!client.commands.has(command)) return;
+
+try {
+	client.commands.get(command).execute(message, args);
+} catch (error) {
+	console.error(error);
+	message.reply('there was an error trying to execute that command!');
+}
 
 
-//Send Message Function WIP
-function SendCustom() {
-    readline.question('What Would You Like To Send?', msgsend => {
-        client.channels.cache.get('769167796022018048').send(`${msgsend}`);
-        console.log(`"${msgsend}" Has been sent!`);
-        readline.close();
-        
-    });
-    
-};
+});
 
-
-
-client.login('Nzk5NjMzNDc5OTYzNzcwODkx.YAGatg.j2cpP8A1wGZiMCL_Fs0UD-CIIPI');
+//Client Login Token
+client.login(token); 
