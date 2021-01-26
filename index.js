@@ -47,7 +47,6 @@ client.on('message', async message => {
 
         //Plays The Youtubes
         if (message.member.voice.channel) {
-          console.log(args)
             var URL = args
             const connection = await message.member.voice.channel.join();
             const stream = ytdl(URL, { filter: 'audioonly' }); 
