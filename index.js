@@ -13,29 +13,10 @@ const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('
 const path = './config.json'
 
 
-//Check if config file exists...
-fs.access(path, fs.F_OK, (err) => {
-  if (err) {
-    console.log(`Config file not found "${path}" \nCreating a new one...`)
-    fs.writeFile('config.json', '{\n "prefix": "!",\n  "token": "your-token-goes-here"\n}', function (err) {
-      if (err) throw err;
-      console.log('Saved!');
-      process.exit()
-    });
-    return
-  }
-console.log("Config File Found!")
+
+
+
 const { prefix, token } = require('./config.json');
-if (token == `your-token-goes-here`) {
-   throw new Error('Please Provide A Valid Token...');
-
-}
-console.log(`Using Prefix "${prefix}" \nUsing Token "${token}"`)
-//Client Login Token
-client.login(token); 
-
-})
-
 
 
 
@@ -105,3 +86,4 @@ try {
 
 });
 
+client.login(token); 
